@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Basket{% endblock %}
+{% set vars = {"ticket" : "warning", "text" : "dark"} %}
+{% if theme == "dark" %}
+    {% if vars.update({"ticket": "warning", "text" : "dark"}) %}{% endif %}
+{% elif theme == "light" %}
+    {% if vars.update({"ticket": "dark" , "text" : "light"}) %}{% endif %}
+{% elif theme == "high-contrast" %}
+    {% if vars.update({"ticket": "warning", "text" : "primary"}) %}{% endif %}
+{% endif %}
+{% block content %}
+    <h1>Basket</h1>
+    <div class="d-flex align-items-stretch justify-content-start flex-column">
+        {% for i, item in basket %}
+            {% if theme == "light" %}
+            <div class="card bg-light text-black border-0">
+            {% elif theme == "dark" %}
+            <div class="card bg-dark text-white border-0">
+            {% elif theme == "high-contrast" %}
+            <div class="card bg-primary text-warning border-0">
+            {% endif %}
+                <div class="d-flex justify-content-start flex-column align-items-center align-items-md-stretch flex-md-row">
+                    <div class="flex-grow-0">
+                        <a href="{{ url_for("movie_page", movie_id=item.showing.movie.id) }}">
+                            <img width="180px" height="auto" src="{{ item.showing.movie.poster_url }}" alt="{{ item.showing.movie.title }}"/>
+                        </a>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="card-body">
+                            <h5 class="card-title"><a href="{{ url_for("showing_page", showing_id=item.showing.id)}}" style="text-decoration: none; color:inherit">{{ item.showing.movie.title.upper() }}, Screen {{ item.showing.screen.screen_name }}</a></h5>
+                            <h6 class="card-title">{{ item.showing.time.strftime("%H:%M, %d %b %Y") }}</h6>
+                            {% if item.seats|length > 1 %}
+                            <h6 class="card-subtitle">{{ item.seats|length }} tickets</h6>
+                            {% else %}
+                            <h6 class="card-subtitle">{{ item.seats|length }} ticket</h6>
+                            {% endif %}
+                            {% for seat in item.seats %}
+                                <span class="badge bg-{{ vars["ticket"] }} text-{{ vars["text"] }}">{{ seat.row }}{{ seat.column }}</span>
+                            {% endfor %}
+                            <p>{{ item.price|format_money }}</p>
+                        </div>
+                    </div>
+                    <form method="post" action="{{ url_for("basket_page") }}" class="flex-grow-0 m-2 d-flex align-items-center justify-content-center">
+                        {{ removeForm.csrf_token }}
+                        {{ removeForm.i(value=i) }}
+                        <input class="btn btn-danger" type="submit" value="Remove"/>
+                    </form>
+                </div>
+            </div>
+            <div style="padding-top : 5px"></div>
+                <hr style="height : 1px">
+            <div style="padding-bottom: 5px"></div>
+        {% endfor %}
+    </div>
+
+    <div class="mt-5 d-flex align-items-end justify-content-evenly flex-column text-right">
+        <h5>Total: {{ total|format_money }}</h5>
+        {% if not current_user.is_authenticated %}<p>You will have to sign in / create an account before you can purchase tickets. If you click checkout it will redirect you.</p>{% endif %}
+        {% if theme == "high-contrast" %}
+        <a class="btn btn-warning text-primary
+        {% elif theme == "dark" %}
+        <a class="btn btn-warning text-black
+        {% else %}
+        <a class="btn btn-danger text-white
+        {% endif %}
+        {% if empty %}
+            disabled" aria=aria-disabled="true"
+        {% else %}
+            "
+        {% endif %}
+            href="{{ url_for("checkout_page") }}">Checkout
+        </a>
+
+    </div>
+
+{% endblock %}

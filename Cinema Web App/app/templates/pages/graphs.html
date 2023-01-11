@@ -1,0 +1,522 @@
+{% extends "base.html" %}
+{% set vars = {"bg" : "dark"} %}
+{% if theme == "dark" %}
+    {% if vars.update({"bg": "dark", "text": "white", "highlight" : "warning"}) %}{% endif %}
+{% elif theme == "light" %}
+    {% if vars.update({"bg": "light", "text" : "black", "highlight" : "danger"}) %}{% endif %}
+{% elif theme == "high-contrast" %}
+    {% if vars.update({"bg": "primary", "text" : "warning", "highlight" : "warning"}) %}{% endif %}
+{% endif %}
+{% block title %}Graphs{% endblock %}
+<div>
+    {% block content %}
+        <div class="alert alert-warning d-block d-md-none" role="alert">
+             Warning: This page is not recommended for mobile devices
+        </div>
+        <ul class="nav nav-tabs tab-{{ vars["bg"] }}" id="graph-tab-controller" role="tablist">
+            <li class="nav-item graph-tab" role="presentation">
+                <a class="nav-link text-{{ vars["text"] }} active" id="total-income-tab" data-bs-toggle="tab"
+                   data-bs-target="#total-income"
+                   role="tab" aria-controls="total-income" aria-selected="true">Total income</a>
+            </li>
+            <li class="nav-item graph-tab" role="presentation">
+                <a class="nav-link text-{{ vars["text"] }}" id="weekly-income-tab" data-bs-toggle="tab"
+                   data-bs-target="#weekly-income"
+                   role="tab"
+                   aria-controls="weekly-income" aria-selected="false">Weekly income</a>
+            </li>
+            <li class="nav-item graph-tab" role="presentation">
+                <a class="nav-link text-{{ vars["text"] }}" id="total-movie-income-tab" data-bs-toggle="tab"
+                   data-bs-target="#total-movie-income" role="tab"
+                   aria-controls="total-movie-income" aria-selected="false">Total income per movie</a>
+            </li>
+            <li class="nav-item graph-tab" role="presentation">
+                <a class="nav-link text-{{ vars["text"] }}" id="ticket-sales-income-tab" data-bs-toggle="tab"
+                   data-bs-target="#ticket-sales-income"
+                   role="tab" aria-controls="ticket-sales-income" aria-selected="false">Ticket sales</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="total-income" role="tabpanel" aria-labelledby="total-income-tab">
+                <h2>Cinema income per day</h2>
+                {# charts for total movie income #}
+                <canvas id="totalIncome" width="1000" height="400" style="flex: 1;background-color: bisque"></canvas>
+                <canvas id="totalIncomeCumulative" width="1000" height="400"
+                        style="flex: 1;background-color: bisque"></canvas>
+            </div>
+            <!-- Tab for weekly income graphs with a single date picker widgets and two graphs  -->
+            <div class="tab-pane fade" id="weekly-income" role="tabpanel" aria-labelledby="weekly-income-tab">
+                <h2>Weekly income per movie</h2>
+                <div class="form-group">
+                    <input type="date" id="weekly-movie-date" value="{{ today }}">Enter Start Date</input>
+
+                </div>
+                {# charts for income in a week #}
+                <canvas id="weeklyMovieIncomeBar" width="1000" height="400" style="background-color: bisque"></canvas>
+                <canvas id="weeklyMovieIncomeLine" width="1000" height="400" style="background-color: bisque"></canvas>
+            </div>
+            {# charts for a total movie income #}
+            <div class="tab-pane fade" id="total-movie-income" role="tabpanel" aria-labelledby="total-movie-income-tab">
+                <h2>Total income per movie</h2>
+                <div class="form-group">
+                    <label for="total-income-movie-select">Select Movie</label>
+                    <select class="movie-select form-control" id="total-income-movie-select">
+                    </select>
+                </div>
+                <canvas id="totalIncomeMovie" width="1000" height="400" style="background-color: bisque"></canvas>
+                <canvas id="totalIncomeMovieCumulative" width="1000" height="400"
+                        style="background-color: bisque"></canvas>
+
+            </div>
+            {# widgets to get start date, end date and list of movies #}
+            <div class="tab-pane fade" id="ticket-sales-income" role="tabpanel"
+                 aria-labelledby="ticket-sales-income-tab">
+
+                <div class="row">
+                    <div class="col">
+                        <label>Start</label>
+                        <input id="ticket-sales-income-start" type="date" class="form-control" value="{{ today }}">
+                    </div>
+                    <div class="col">
+                        <label>End</label>
+                        <input id="ticket-sales-income-end" type="date" class="form-control" value={{ next_week }}>
+                    </div>
+                </div>
+                <div class="row movie-checkbox">
+                </div>
+                <canvas id="ticketSalesDateRangeBar" width="1000" height="400"
+                        style="background-color: bisque"></canvas>
+                <canvas id="ticketSalesDateRangeLine" width="1000" height="400"
+                        style="background-color: bisque"></canvas>
+            </div>
+        </div>
+
+    {% endblock %}
+    {% block scripts %}
+        <script type="text/javascript">
+            function getRandomColour() {
+                var letters = '0123456789ABCDEF';
+                var color = '#';
+                for (var i = 0; i < 6; i++) {
+                    color += letters[Math.floor(Math.random() * 16)];
+                }
+                return color;
+            }
+
+            function ticket_range_graph(bar, line) {
+                const start_date = $("#ticket-sales-income-start").val();
+                const end_date = $("#ticket-sales-income-end").val();
+                const ids = []
+                $(".ticket-sales-movie-input").each(function () {
+                    if (this.checked) {
+                        ids.push(parseInt($(this).attr('id').replace('movie-checkbox-', '')));
+                    }
+                });
+                $.ajax({
+                    url: "{{ url_for('api_ticket_sales_graph') }}",
+                    dataType: 'json',
+                    method: "GET",
+
+                    data: {
+                        ids: ids.join(","),
+                        start_date: start_date,
+                        end_date: end_date
+                    },
+                    success: function (data) {
+                        const movies = data.ticket_sales;
+                        const dates = data.dates;
+                        bar.data.labels = dates.map(function (e) {
+                            return moment(e * 1000).format("dd DD/MM/YY");
+                        });
+                        line.data.labels = dates.map(function (e) {
+                            return new Date(e * 1000).toLocaleDateString();
+                        });
+                        bar.data.datasets = [];
+                        line.data.datasets = [];
+                        Object.entries(data.ticket_sales).forEach(function ([label, dataPoints], index) {
+                            var colour = getRandomColour(label)
+                            var to_add =
+                                {
+                                    backgroundColor: colour,
+                                    borderColor: colour,
+                                    fill: false,
+                                    label: label,
+                                    data: dataPoints.map(function (e) {
+                                        return e
+                                    })
+                                };
+                            bar.data.datasets.push(to_add);
+                            line.data.datasets.push(to_add);
+                        });
+                        bar.update();
+                        line.update();
+                    }
+                })
+            }
+
+            $(function () {
+                let totalIncomeChart = new Chart(document.getElementById("totalIncome"), {
+                    type: 'bar',
+                    data: {
+                        labels: [],
+                        datasets: [
+                            {
+                                label: "Income (£)",
+                                backgroundColor: "#2980b9",
+                                borderColor: "#9b59b6",
+                                data: [],
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        title: {
+                            display: true,
+                            text: 'Total cinema income against time (£)'
+                        },
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        },
+                        responsive: true,
+                        maintainAspectRatio: true
+                    }
+                });
+                let totalIncomeCumulativeChart = new Chart(document.getElementById("totalIncomeCumulative"), {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [
+                            {
+                                label: "Income (£)",
+                                backgroundColor: "#2980b9",
+                                borderColor: "#9b59b6",
+                                data: [],
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        title: {
+                            display: true,
+                            text: 'Cumulative cinema income against time (£)'
+                        },
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        },
+                        responsive: true,
+                        maintainAspectRatio: true
+                    }
+                });
+                let ticketSalesDateRangeBar = new Chart(document.getElementById("ticketSalesDateRangeBar"), {
+                    type: 'bar',
+                    data: {
+                        labels: [],
+                        datasets: [
+                            {
+                                label: "Ticket Sales",
+                                backgroundColor: "#2980b9",
+                                borderColor: "#9b59b6",
+                                data: [],
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        title: {
+                            display: true,
+                            text: 'Ticket Sales per Movie over Time'
+                        },
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        },
+                        responsive: true,
+                        maintainAspectRatio: true
+                    }
+                });
+                let ticketSalesDateRangeLine = new Chart(document.getElementById("ticketSalesDateRangeLine"), {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [
+                            {
+                                label: "Ticket Sales",
+                                backgroundColor: "#2980b9",
+                                borderColor: "#9b59b6",
+                                data: [],
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        title: {
+                            display: true,
+                            text: 'Ticket Sales per Movie over Time'
+                        },
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        },
+                        responsive: true,
+                        maintainAspectRatio: true
+                    }
+                });
+                $.ajax({
+                    url: "{{ url_for("api_total_income_graph") }}",
+                    dataType: "json",
+                    success: function (data) {
+                        const incomes = data.incomes;
+                        const incomesCumulative = data.incomes_cumulative;
+                        totalIncomeChart.data.labels = incomes.map(function (e) {
+                            return new Date(e[0] * 1000).toLocaleDateString();
+                        });
+                        totalIncomeChart.data.datasets[0].data = incomes.map(function (e) {
+                            return e[1] / 100;
+                        });
+                        totalIncomeChart.update();
+                        totalIncomeCumulativeChart.data.labels = incomesCumulative.map(function (e) {
+                            return new Date(e[0] * 1000).toLocaleDateString();
+                        });
+                        totalIncomeCumulativeChart.data.datasets[0].data = incomesCumulative.map(function (e) {
+                            return e[1] / 100;
+                        });
+                        totalIncomeCumulativeChart.update();
+
+                    }
+                });
+
+
+                $.ajax({
+                    url: "{{ url_for("api_movies") }}",
+                    dataType: "json",
+                    success: function (movies) {
+                        movies.forEach(function (movie) {
+                            const option = $("<option>" + movie.title + "</option>");
+                            option.attr("value", movie.id);
+                            $(".movie-select").append(option);
+                            const checkbox = $('<div class="form-check ticket-sales-movie-wrapper col-md-4"></div>');
+                            const checkboxInput = $('<input class="form-check-input ticket-sales-movie-input" type="checkbox"></input>');
+                            const checkboxLabel = $('<label class="form-check-label text-truncate w-100">' + movie.title + '</label>');
+                            checkboxInput.attr("id", "movie-checkbox-" + movie.id);
+                            checkboxLabel.attr("for", "movie-checkbox-" + movie.id);
+                            checkbox.append(checkboxInput, checkboxLabel);
+                            $(".movie-checkbox").append(checkbox);
+                        });
+                        {#$("#ticket-sales-income-start").val(moment().startOf('year').format("YYYY-MM-DD"));#}
+                        {#$("#ticket-sales-income-end").val(moment().startOf('year').add(7, 'days').format("YYYY-MM-DD"));#}
+                        $("#ticket-sales-income-start, #ticket-sales-income-end, .ticket-sales-movie-input").on('change', function () {
+                            const start_date = new Date(document.getElementById("ticket-sales-income-start").value);
+                            const end_date = new Date(document.getElementById("ticket-sales-income-end").value);
+                            if (start_date > end_date) {
+                                var new_end_date = start_date
+
+                                function pad(n) {
+                                    return n < 10 ? '0' + n : n
+                                };
+                                new_end_date.setDate(new_end_date.getDate() + 7);
+                                var new_end_date_str = new_end_date.getFullYear() + "-" +
+                                    String(pad(new_end_date.getMonth() + 1)) + "-" + String(pad(new_end_date.getDay()));
+                                document.getElementById("ticket-sales-income-end").value = new_end_date_str;
+                            }
+                            ticket_range_graph(ticketSalesDateRangeBar, ticketSalesDateRangeLine)
+                        });
+                        if (movies.length > 0) {
+                            $(".movie-select").val(movies[0].id);
+                            $(".movie-select").trigger("change");
+                        }
+                    }
+                });
+
+                let totalIncomeMovieChart = new Chart(document.getElementById("totalIncomeMovie"), {
+                    type: "bar",
+                    data: {
+                        datasets: [{
+                            label: "Income per day",
+                            backgroundColor: "#2980b9",
+                            borderColor: "#9b59b6",
+                            data: [],
+                            fill: false
+                        }],
+                        labels: []
+                    },
+                    options: {
+                        title: {
+                            display: true,
+                            text: 'Movie income against time'
+                        },
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        },
+                        responsive: true,
+                        maintainAspectRatio: true
+                    }
+                });
+                let totalIncomeCumulativeMovieChart = new Chart(document.getElementById("totalIncomeMovieCumulative"), {
+                    type: "line",
+                    data: {
+                        datasets: [{
+                            label: "Movie income against time (£)",
+                            backgroundColor: "#2980b9",
+                            borderColor: "#9b59b6",
+                            data: [],
+                            fill: false
+                        }],
+                        labels: []
+                    },
+                    options: {
+                        title: {
+                            display: true,
+                            text: 'Cumulative movie income'
+                        },
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        },
+                        responsive: true,
+                        maintainAspectRatio: true
+                    }
+                });
+                let weeklyMovieIncomeBar = new Chart(document.getElementById("weeklyMovieIncomeBar"), {
+                    type: "bar",
+                    data: {
+                        datasets: [],
+                        labels: []
+                    },
+                    options: {
+                        title: {
+                            display: true,
+                            text: 'Weekly income'
+                        },
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        },
+                        responsive: true,
+                        maintainAspectRatio: true
+                    }
+                });
+                let weeklyMovieIncomeLine = new Chart(document.getElementById("weeklyMovieIncomeLine"), {
+                    type: "line",
+                    data: {
+                        datasets: [],
+                        labels: []
+                    },
+                    options: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Income per day'
+                        },
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        },
+                        responsive: true,
+                        maintainAspectRatio: true
+                    }
+                });
+                $("#total-income-movie-select").on("change", function () {
+                    const value = $(this).val();
+                    $.ajax({
+                        url: "{{ url_for('api_movie_income_graph') }}",
+                        dataType: 'json',
+                        method: "GET",
+                        data: {
+                            id: value
+                        },
+                        success: function (data) {
+                            const incomes = data.incomes;
+                            const incomesCumulative = data.incomes_cumulative;
+                            totalIncomeMovieChart.data.datasets[0].data = incomes.map(function (e) {
+                                return e[1] / 100;
+                            })
+                            totalIncomeMovieChart.data.labels =
+                                incomes.map(function (e) {
+                                    return new Date(e[0] * 1000).toLocaleDateString();
+                                });
+                            totalIncomeMovieChart.update();
+                            totalIncomeCumulativeMovieChart.data.labels = incomesCumulative.map(function (e) {
+                                return new Date(e[0] * 1000).toLocaleDateString();
+                            });
+                            totalIncomeCumulativeMovieChart.data.datasets[0].data = incomesCumulative.map(function (e) {
+                                return e[1] / 100;
+                            });
+                            totalIncomeCumulativeMovieChart.update();
+                        }
+                    })
+                });
+
+                $("#weekly-movie-date").on("change", function () {
+                    const value = $(this).val();
+                    $.ajax({
+                        url: "{{ url_for('api_weekly_analysis_graph') }}",
+                        dataType: 'json',
+                        method: "GET",
+                        data: {
+                            week: value
+                        },
+                        success: function (data) {
+                            const movies = data.movies;
+                            const dates = data.dates;
+                            weeklyMovieIncomeBar.data.labels = dates.map(function (e) {
+                                return moment(e * 1000).format("dd DD/MM/YY");
+                            });
+                            weeklyMovieIncomeLine.data.labels = dates.map(function (e) {
+                                return new Date(e * 1000).toLocaleDateString();
+                            });
+                            weeklyMovieIncomeBar.data.datasets = [];
+                            weeklyMovieIncomeLine.data.datasets = [];
+                            Object.entries(data.movies).forEach(function ([label, dataPoints], index) {
+                                var colour = getRandomColour(label)
+                                var to_add =
+                                    {
+                                        backgroundColor: colour,
+                                        borderColor: colour,
+                                        fill: false,
+                                        label: label,
+                                        data: dataPoints.map(function (e) {
+                                            return e / 100
+                                        })
+                                    };
+                                weeklyMovieIncomeBar.data.datasets.push(to_add);
+                                weeklyMovieIncomeLine.data.datasets.push(to_add);
+                            });
+                            weeklyMovieIncomeBar.update();
+                            weeklyMovieIncomeLine.update();
+                        }
+
+                    });
+                });
+            });
+        </script>
+    {% endblock %}
+</div>

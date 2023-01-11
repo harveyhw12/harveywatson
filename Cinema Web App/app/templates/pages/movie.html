@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}{{ movie.title }}{% endblock %}
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for("static", filename="styles/movies.css") }}">
+{% endblock %}
+{% set vars = {"divider" : "dark", "button" : "warning"} %}
+{% if theme == "dark" %}
+    {% if vars.update({"divider": "light", "button" : "warning"}) %}{% endif %}
+{% elif theme == "light" %}
+    {% if vars.update({"divider": "dark" , "button" : "danger"}) %}{% endif %}
+{% elif theme == "high-contrast" %}
+    {% if vars.update({"divider": "warning", "button" : "warning"}) %}{% endif %}
+{% endif %}
+{% block content %}
+    <div class="movie-info-backdrop text-light mt-2 mt-lg-4" style="background-image: url('{{ movie.backdrop_url }}'); margin-top: -15px">
+        <div class="d-flex align-items-lg-start align-items-center flex-lg-row flex-column justify-content-start movie-info-overlay overflow-hidden p-lg-5 p-3">
+            <div>
+                <div class="col" style="padding-right : 30px">
+                    <div class="row" style="padding: 0px">
+                        <div class="d-flex align-items-center justify-items-center">
+                            <img class="img-thumbnail me-lg-2 mb-2 mb-lg-0 rounded-0" width="240px" height="auto" src="{{ movie.poster_url }}"
+                                 alt="{{ movie.title }}"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <p class="text-center"><i>{{ movie.runtime }} minutes</i></p>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div style="border-bottom: 3px solid" class="border-bottom-{{ vars["divider"] }} container">
+                    <div class="row">
+                        <div class="col" style="padding : 0px">
+                        <h1 style="text-transform:uppercase">{{ movie.title }}</h1>
+                        </div>
+                        <div class="col-auto">
+                            <div class="d-flex mb-2 mb-sm-0 justify-content-end">
+                                {% if movie.certification %}
+                                <img class="me-2 ms-0"
+                                     width="40px"
+                                     height="auto" src="
+                                        {% if movie.certification == "12" %}{{ url_for('static', filename='images/BBFC_12_2019.svg') }}
+                                        {% elif movie.certification == '12A' %}{{ url_for('static', filename='images/BBFC_12A_2019.svg') }}
+                                        {% elif movie.certification == '15' %}{{ url_for('static', filename='images/BBFC_15_2019.svg') }}
+                                        {% elif movie.certification == '18' %}{{ url_for('static', filename='images/BBFC_18_2019.svg') }}
+                                        {% elif movie.certification == 'PG' %}{{ url_for('static', filename='images/BBFC_PG_2019.svg') }}
+                                        {% elif movie.certification == 'R18' %}{{ url_for('static', filename='images/BBFC_R18_2019.svg') }}
+                                        {% elif movie.certification == 'U' %}{{ url_for('static', filename='images/BBFC_U_2019.svg') }}
+                                        {% endif %}">
+                                {% endif %}
+                                {% if theme == "light" %}
+                                <span class="badge bg-danger text-white fs-6 d-flex align-items-center">{{ movie.vote_average * 10 }}%</span>
+                                {% elif theme == "dark" %}
+                                <span class="badge bg-warning text-dark fs-6 d-flex align-items-center">{{ movie.vote_average * 10 }}%</span>
+                                {% else %}
+                                <span class="badge bg-warning text-primary fs-6 d-flex align-items-center">{{ movie.vote_average * 10 }}%</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h3 style="padding-top: 10px">{{ movie.tagline }}</h3>
+                {% if movie.tagline != movie.overview %}<p>{{ movie.overview }}</p>{% endif %}
+                <h4>Cast</h4>
+                <div class="row">
+                    {% for cast in movie_cast %}
+                        <div class="col-md-2 col-4 avatar d-flex align-items-center justify-content-center flex-column">
+                            {% if cast.profile_url %}
+                                <img width="auto" height="50px" src="{{ cast.profile_url }}"
+                                     alt="{{ cast.name }}">
+                            {% else %}
+                                <img width="auto" height="50px"
+                                     src="{{ url_for('static', filename='images/blank-profile-picture.png') }}"
+                                     alt="{{ cast.name }}">
+                            {% endif %}
+                            <p class="text-center">{{ cast.name }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="d-flex align-items-start justify-content-start flex-row flex-wrap">
+                    {% for keyword in movie.keywords %}
+                        <h6 class="keyword m-2"><span class="badge bg-secondary">{{ keyword.name }}</span></h6>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 d-flex flex-column flex-md-row align-items-center justify-content-center">
+        <span>Key:</span>
+        <button class="btn btn-secondary btn-sm m-2">Regular</button>
+        <button class="btn btn-secondary btn-sm m-2" disabled>Sold out</button>
+        <button class="btn btn-success btn-sm m-2">Subtitles</button>
+        <button class="btn btn-warning btn-sm m-2">Audio Descriptions</button>
+    </div>
+
+    {% for (day, dayShowings) in showings %}
+        <h2>{{ day }}</h2>
+        <div class="d-flex align-items-start justify-content-start flex-wrap">
+            {% for showing in dayShowings %}
+                <a class="btn {% if showing.showing_type == ShowingType.regular %}btn-secondary{% elif showing.showing_type == ShowingType.subtitles %}btn-success{% else %}btn-warning{% endif %} m-2{% if showing.sold_out %} disabled{% endif %}"
+                   href="{{ url_for("showing_page", showing_id=showing.id) }}">{{ showing.time|format_datetime("%H:%M") }}<br>Screen {{ showing.screen.screen_name }}</a>
+            {% endfor %}
+        </div>
+    {% endfor %}
+
+
+
+
+
+{% endblock %}

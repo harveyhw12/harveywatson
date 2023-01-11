@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}management{% endblock %}
+<style>
+    .vl-light {
+        border-left: 1px solid #a4a4a5;
+        height: 35px;
+        position: relative;
+    }
+
+    .vl-dark {
+        border-left: 1px solid white;
+        height: 35px;
+    }
+
+    .vl-high-contrast {
+        border-left: 1px solid #f0ad4e;
+        height: 35px;
+    }
+</style>
+{% block content %}
+{% if accounts %}
+    <!--if 'accounts' exists that means a form has already been submitted once so we will now print all names-->
+    <h2>Accounts associated with {{ accounts[0]['first_name'] }} {{ accounts[0]['last_name'] }}</h2>
+    <p>Please pick the correct email address of the account you wish to change permissions for.</p>
+    <hr>
+    <div class="container">
+        {% for i in accounts %}
+        <div class="row">
+            <div class="col">
+                <form method="POST", action="{{ url_for('change_permissions') }}">
+                    <input type="hidden" value="{{i['email']}}" name="email"/>
+                    <div class="row">
+                        <div class="col">
+                            <p style="border-left:1px">Change {{ i['email'] }} to role:</p>
+                        </div>
+                        <div class="col">
+                            {% if theme=="high-contrast" %}
+                                <select name="type" style="border:0" class="bg-warning text-primary">
+                                    <option value="customer">Customer</option>
+                                    <option value="staff">Staff</option>
+                                    <option value="manager">Manager</option>
+                                </select>
+                            {% elif theme=="light" %}
+                                <select name="type" style="border:0" class="bg-danger text-light">
+                                    <option value="customer">Customer</option>
+                                    <option value="staff">Staff</option>
+                                    <option value="manager">Manager</option>
+                                </select>
+                            {% else %}
+                                <select name="type" style="border:0" class="bg-warning text-dark">
+                                    <option value="customer">Customer</option>
+                                    <option value="staff">Staff</option>
+                                    <option value="manager">Manager</option>
+                                </select>
+                            {% endif %}
+                        </div>
+                        <div class="col-sm-2">
+                            {% if theme=="high-contrast" %}
+                                <p><input style="border:0" class="bg-warning text-primary" type="submit" value="Submit"/></p>
+                            {% elif theme=="light" %}
+                                <p><input style="border:0" class="bg-danger text-light" type="submit" value="Submit"/></p>
+                            {% else %}
+                                <p><input style="border:0" class="bg-warning text-dark" type="submit" value="Submit"/></p>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+            <div class="col">
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% elif error == True %}
+    <div class="alert alert-danger" role="alert">
+        No users with this name exist.
+    </div>
+    <h2>Search For Name</h2>
+    <form method="POST", action="{{ url_for('search_name')}}">
+        {{ form.hidden_tag() }}
+        {{ form.first_name.label}} {{form.first_name}}
+        {{ form.last_name.label}} {{form.last_name}}
+        {% if theme=="high-contrast" %}
+            <input style="border:0" class="bg-warning text-primary" type="submit" value="Search"/>
+        {% elif theme=="light" %}
+            <input style="border:0" class="bg-danger text-light" type="submit" value="Search"/>
+        {% else %}
+            <input style="border:0" class="bg-warning text-dark" type="submit" value="Search"/>
+        {% endif %}
+    </form>
+{% else %}
+<!--if it doesn't exist we are loading the page for the first time-->
+<!--we show two boxes for both first and last name -->
+    <h2>Search For Name</h2>
+    <form method="POST", action="{{ url_for('search_name')}}">
+        {{ form.hidden_tag() }}
+        {{ form.first_name.label}} {{form.first_name}}
+        {{ form.last_name.label}} {{form.last_name}}
+        {% if theme=="high-contrast" %}
+            <input style="border:0" class="bg-warning text-primary" type="submit" value="Search"/>
+        {% elif theme=="light" %}
+            <input style="border:0" class="bg-danger text-light" type="submit" value="Search"/>
+        {% else %}
+            <input style="border:0" class="bg-warning text-dark" type="submit" value="Search"/>
+        {% endif %}
+    </form>
+{% endif %}
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename="styles/main.scss.css") }}">
+{#    <script src="https://kit.fontawesome.com/1c99eef207.js" crossorigin="anonymous"></script>#}
+
+    <link rel="icon" href="{{ url_for('static', filename="images/favicon.ico") }}" type='image/x-icon'>
+
+    <title>{% block title %}{% endblock %} - Dadpad Cinema</title>
+
+    {% block head %}
+    {% endblock %}
+    <link href='https://fonts.googleapis.com/css?family=Lexend' rel='stylesheet'>
+    <link href='https://fonts.googleapis.com/css?family=Josefin+Sans' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"/>
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.css"/>
+    <style>
+        body {
+            font-family: 'Josefin Sans', sans-serif !important;
+        }
+    </style>
+</head>
+{% if theme == "dark" %}
+    <body class="d-flex flex-column bg-dark text-white">
+
+{% elif theme == "light" %}
+    <body class="d-flex flex-column bg-light text-black">
+{% elif theme == "high-contrast" %}
+    <body class="d-flex flex-column bg-primary text-warning">
+{% endif %}
+{% block root %}{% endblock %}
+{% include "components/navbar.html" %}
+<main class="flex-shrink-0 {% if not no_container %}container{% endif %}">
+    {% include "components/messages.html" %}
+    {% block content %}
+    {% endblock %}
+</main>
+
+<!--footer-->
+<footer class="footer mt-auto py-3">
+<hr>
+    <div class="container">
+        {% if theme != "high-contrast" %}
+        <h1 class="display-6 text-center" style="padding-top: 15px">THE DADPAD CINEMAS CORPORATION<sup>©</sup></h1>
+        {% else %}
+        <h1 class="display-6 text-center" style="padding-top: 15px">THE DADPAD CINEMAS CORPORATION<sup>©</sup></h1>
+        {% endif %}
+    <div class="row w-100">
+        <style>
+            .footer-link{
+                text-decoration: none;
+                text-align: center;
+                transition: 1s;
+                opacity: 0.5;
+            }
+
+            .footer-link:hover {text-decoration: underline; opacity: 1}
+        </style>
+        <div class="col-xl-3 col-lg-6 col-12">
+            {% if theme == "light" %}
+            <div class="text-dark text-wrap text-center">
+            {% elif theme == "dark" %}
+            <div class="text-light text-wrap text-center">
+            {% elif theme == "high-contrast" %}
+            <div class="text-warning text-wrap text-center">
+            {% endif %}
+                <a href="mailto:enquiries@dadpad.uk" style="text-decoration: none; color : inherit">
+                    <div class="footer-link">
+                        enquiries@dadpad.uk
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-lg-6 col-12">
+            {% if theme == "light" %}
+            <div class="text-dark text-wrap text-center">
+            {% elif theme == "dark" %}
+            <div class="text-light text-wrap text-center">
+            {% elif theme == "high-contrast" %}
+            <div class="text-warning text-wrap text-center">
+            {% endif %}
+                <a href="https://goo.gl/maps/a7xENm7iKWpVy2Ku9" style="text-decoration: none; color : inherit">
+                <div class="footer-link">
+                    School of Computing, Leeds, LS2 9JT
+                </div>
+                </a>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6 col-12">
+            <a href="https://ibb.co/SKBYFrq" style="text-decoration: none; color : inherit">
+            {% if theme == "light" %}
+            <div class="text-dark text-wrap text-center text-decoration: $link-hover-decoration">
+            {% elif theme == "dark" %}
+            <div class="text-light text-wrap text-center">
+            {% elif theme == "high-contrast" %}
+            <div class="text-warning text-wrap text-center">
+            {% endif %}
+                <div class="footer-link">
+                    About Us
+                </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-xl-3 col-lg-6 col-12">
+            {% if theme == "light" %}
+            <div class="text-dark text-wrap text-center">
+            {% elif theme == "dark" %}
+            <div class="text-light text-wrap text-center">
+            {% elif theme == "high-contrast" %}
+            <div class="text-warning text-wrap text-center">
+            {% endif %}
+                <div style="opacity : 0.5">
+                    A group project for COMP2913.
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</footer>
+
+
+
+<script
+        src="https://code.jquery.com/jquery-3.5.1.min.js"
+        integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.js"></script>
+<script type="text/javascript">
+ window.addEventListener('load', function(){
+        window.cookieconsent.initialise({
+            "fontFamily": 'Josefin Sans',
+            'palette': {
+                'popup': {
+                    {% if theme == "high-contrast" %}
+                    "background": "#ffc107",
+                    "text": "#004085",
+                    {% elif theme == "dark" %}
+                    "background": "#ffc107",
+                    "text" : "#212529",
+                    {% else %}
+                    "background": "#dc3545",
+                    "text" : "#f8f9fa",
+                    {% endif %}
+                },
+                "button":{
+                    {% if theme == "high-contrast" %}
+                    "background": "#004085",
+                    "text": "#ffc107"
+                    {% elif theme == "dark" %}
+                    "background": "#212529",
+                    "text" : "#ffc107"
+                    {% else %}
+                    "background": "#f8f9fa",
+                    "text" : "#dc3545"
+                    {% endif %}
+                }
+            },
+            "content": {
+                "message": "This website uses cookies to ensure you get the best experience on our website by storing user information in our cookies.",
+                "dismiss": "Okay!",
+            }
+        })
+    })
+
+</script>
+{% block scripts %}
+{% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Add Movie{% endblock %}
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for("static", filename="styles/movies.css") }}">
+{% endblock %}
+{% block content %}
+    <h2>Below are our currently inactive movies. Click a movie poster to make it active</h2>
+    <div class="form-group">
+        <input id="movie-search" class="form-control"
+               placeholder="Enter a Movie Name, Keyword or Date (formatted dd/mm/yyyy)"/>
+    </div>
+
+    <div class="row">
+        {% for movie in inactive_movies %}
+            <div class="movie-col col-lg-3 col-sm-4" id="movie-col-{{ movie.id }}">
+                <div class="movie", value="{{ movie.id }}">
+                    <img src="{{ movie.poster_url }}" alt="{{ movie.title }}"/>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <h2>To add a new movie search here</h2>
+    <div style="display: inline" class="form-group">
+        <form style="display: inline" id="tmdb-search-form">
+            <input style="display: inline" id="movie-tmdb-search" class="form-control"
+                placeholder="Enter a Movie Name, Keyword or Date (formatted dd/mm/yyyy)"/>
+            <input style="display: inline" type="submit" id="submit-movie-search">
+        </form>
+    </div>
+    <div class="row", id="display-tmdb-movies">
+
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script type="text/javascript">
+        function add_movie() {
+            const id = $(this).attr("id").split("-")[2]
+            console.log(id)
+            $.ajax({
+                url: "{{ url_for('add_movie') }}",
+                dataType: 'json',
+                method: "GET",
+                data: {
+                    input: id
+                },
+                success: function (data) {
+                    console.log(data["success"])
+                    window.location.reload()
+                }
+            })
+        }
+        function search() {
+            const compare = $(this).val().toLowerCase();
+            $.ajax({
+                url: "{{ url_for('api_movies_by_showing_date') }}",
+                dataType: 'json',
+                method: "GET",
+                data: {
+                    input: compare
+                },
+                success: function (data) {
+                    if (compare.length > 0) {
+                        $(".movie-col").each(function () {
+                            let id = $(this).attr("id").split("-")[2];
+                            if (data.ids.includes(parseInt(id))) {
+                                $("#movie-col-" + id).css("display", "block")
+                            } else {
+                                $("#movie-col-" + id).css("display", "none")
+                            }
+                        })
+                    } else {
+                        $(".movie-col").css("display", "block");
+                    }
+                }
+            })
+        }
+
+
+
+        $(function () {
+            $("#movie-search").on("keyup", search);
+            $("#tmdb-search-form").on("submit", function(e) {
+            e.preventDefault()
+            const compare = $("#movie-tmdb-search").val().toLowerCase();
+            $.ajax({
+                url: "{{ url_for('tmdb_movies') }}",
+                dataType: 'json',
+                method: "GET",
+                data: {
+                    title: compare
+                },
+                success: function (data) {
+                    $("#display-tmdb-movies").empty()
+                    console.log("Success")
+                    console.log(data)
+                    const poster_urls = data["poster_urls"]
+                    const ids = data["ids"]
+                    const titles = data["titles"]
+                    for (var i = 0; i < titles.length; i++) {
+                        console.log(i)
+                        const div_id = "movie-col-" + ids[i]
+                        const div = $("<div></div>");
+                        const title =$("<p></p>")
+                        title.css("text-align","center")
+                        title.html(titles[i])
+                        div.attr("class", "movie-col col-lg-3 col-sm-4");
+                        div.attr("id", div_id);
+                        const innerdiv = $("<div></div>")
+                        innerdiv.attr("class", "movie")
+                        innerdiv.attr("value", ids[i])
+                        div.append(innerdiv)
+                        const img = $("<img>")
+                        img.attr("src", poster_urls[i])
+                        img.attr("alt", titles[i])
+                        innerdiv.append(img)
+                        innerdiv.append(title)
+                        div.on("click", add_movie)
+                        $("#display-tmdb-movies").append(div)
+                    }
+                }
+            })
+            });
+        });
+        $(".movie-col").on("click", add_movie)
+    </script>
+
+{% endblock %}

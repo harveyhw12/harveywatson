@@ -1,0 +1,89 @@
+@import "../bootstrap/scss/functions";
+@import "../bootstrap/scss/variables";
+@import "../bootstrap/scss/mixins";
+
+.movie {
+  cursor: pointer;
+  margin: 1.5rem;
+}
+
+.movie img {
+  width: 100%;
+  height: auto;
+  -moz-transition-duration: 0.3s;
+  -o-transition-duration: 0.3s;
+  -webkit-transition-duration: 0.3s;
+  transition-duration: 0.3s;
+}
+
+.movie-dark:hover img {
+    box-shadow: rgba(255, 255, 255, 0.25) 0px 25px 50px -12px;
+}
+
+.movie-light:hover img {
+    box-shadow: rgba(0, 0, 0, 0.5) 0px 25px 50px -12px;
+}
+
+.movie-high-contrast:hover img {
+    box-shadow: rgba(240, 173, 78, 0.9) 0px 25px 50px -12px;
+}
+
+.movie-backdrop {
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-attachment: scroll;
+  background-size: cover;
+}
+
+.movie-content {
+  margin-top: 8rem;
+  position: relative;
+}
+
+.avatar img {
+  object-fit: cover;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+}
+
+.avatar p {
+  font-size: 0.75rem;
+}
+
+.movie-info-backdrop {
+  width: 100%;
+  padding: 0;
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-attachment: scroll;
+  background-size: cover;
+  @include media-breakpoint-up(lg) {
+    position: relative;
+    padding-top: 56.25%;
+  }
+}
+
+.movie-info-overlay {
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  @include media-breakpoint-up(lg) {
+    position: absolute;
+  }
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}

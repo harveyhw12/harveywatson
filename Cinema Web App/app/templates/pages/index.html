@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+{% set no_container = True %}
+{% set vars = {"button" : "dark", "text": "light"} %}
+{% if theme == "dark" %}
+    {% if vars.update({"button": "light", "text": "light"}) %}{% endif %}
+{% elif theme == "light" %}
+    {% if vars.update({"button": "dark", "text": "dark"}) %}{% endif %}
+{% elif theme == "high-contrast" %}
+    {% if vars.update({"button": "warning", "text": "warning"}) %}{% endif %}
+{% endif %}
+
+{% block title %}Home{% endblock %}
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for("static", filename="styles/movies.css") }}">
+{% endblock %}
+{% block content %}
+    {% if carousel %}
+        <!--Carousel-->
+        <div id="carousel-captions" class="carousel slide" data-bs-ride="carousel"
+             style="padding: 0; margin-top: -15px">
+            <div class="carousel-indicators">
+
+                <button type="button" data-bs-target="#carousel-captions" data-bs-slide-to="0" class="active bg-light"
+                        aria-current="true" aria-label="Slide 1"></button>
+                <button type="button" data-bs-target="#carousel-captions" data-bs-slide-to="1" class="bg-light"
+                        aria-label="Slide 2"></button>
+                <button type="button" data-bs-target="#carousel-captions" data-bs-slide-to="2" class="bg-light"
+                        aria-label="Slide 3"></button>
+            </div>
+            <div class="carousel-inner">
+                {% for carousel_movie in carousel %}
+                    <div class="carousel-item {% if carousel_movie == carousel[0] %}active{% endif %}"
+                         id="carousel-{{ carousel_movie.id }}">
+                        <a href="{{ url_for('movie_page', movie_id=carousel_movie.id) }}">
+                            <img src="{{ carousel_movie.backdrop_url }}" class="d-block w-100 d-sm-none"
+                                 alt="{{ carousel_movie.title }}">
+                            <img src="{{ carousel_movie.backdrop_url }}" class="d-sm-block w-100 d-none"
+                                 alt="{{ carousel_movie.title }}"
+                                 style="height:96vh; object-fit: cover; position: relative">
+                            <div class="carousel-caption d-none d-sm-block">
+                                <h4 style="text-shadow:
+                                -2px -2px 10px rgba(0, 0, 0, 0.5),
+                                2px -2px 10px rgba(0, 0, 0, 0.5),
+                                -2px 2px 10px rgba(0, 0, 0, 0.5),
+                                2px 2px 10px rgba(0, 0, 0, 0.5),
+                                -3px 0 10px rgba(0, 0, 0, 0.5),
+                                3px 0 10px rgba(0, 0, 0, 0.5),
+                                0 -3px 10px rgba(0, 0, 0, 0.5),
+                                0 3px 10px rgba(0, 0, 0, 0.5);
+                            ; text-transform: uppercase">{{ carousel_movie.title }}</h4>
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
+                <button class="carousel-control-prev" id="carousel-prev" type="button" data-bs-target="#carousel-captions"
+                        data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" id="carousel-next" type="button" data-bs-target="#carousel-captions"
+                        data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    {% endif %}
+    {% if theme != "high-contrast" %}
+        <h1 id="dadpad-title" class="display-1 text-center dadpad-title"
+            style="padding-top: 40px; padding-bottom: 0px; position: relative">DADPAD CINEMA</h1>
+    {% else %}
+        <h1 id="dadpad-title" class="display-1 text-center" style="padding-top: 40px">DADPAD CINEMA</h1>
+    {% endif %}
+
+    <style>
+        #expanding-divider {
+            width: 0%;
+            left: 50%;
+            position: absolute;
+            border: solid 3px var(--bs-{{ vars["text"] }});
+            background-color: var(--bs-{{ vars["text"] }});
+            opacity: 0;
+            transition: width 1.2s, left 1.2s, opacity 0.3s;
+        }
+    </style>
+    <hr id="expanding-divider">
+    <h1 class="display-6 text-center" style="padding-top: 60px">CURRENTLY PLAYING:</h1>
+    <div class="container">
+
+    <div class="row">
+        <!--Search Element -->
+        <div class="form-group">
+            <input id="movie-search" class="form-control"
+                   placeholder="Enter a movie name, keyword or date (dd/mm/yyyy)"/>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for movie in movies %}
+            <div class="movie-col col-lg-3 col-sm-4" id="movie-col-{{ movie.id }}">
+                <div class="movie movie-{{ theme }}" data-bs-toggle="modal"
+                     data-bs-target="#movie-modal-{{ movie.id }}">
+                    <img src="{{ movie.poster_url }}" alt="{{ movie.title }}"/>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    </div>
+
+{% endblock %}
+{% block root %}
+    {% for movie in movies %}
+        <div class="modal fade" id="movie-modal-{{ movie.id }}"
+             aria-labelledby="#movie-modal-{{ movie.id }}-label" aria-hidden="true" tabindex="-1">
+        <div class="modal-dialog modal-lg h-100">
+        <div class="modal-content position-relative">
+            <button class="btn p-4 position-absolute end-0 top-0 text-light" data-bs-toggle="modal"
+                    data-bs-target="#movie-modal-{{ movie.id }}"><i class="far fa-times-circle"></i></button>
+            {% if theme == "dark" %}
+                <div class="bg-dark text-white movie-backdrop"
+                     style='background-image: url("{{ movie.backdrop_url }}")'>
+                <div class="bg-dark p-4 movie-content">
+            {% elif theme == "light" %}
+                <div class="bg-light text-dark movie-backdrop"
+                     style='background-image: url("{{ movie.backdrop_url }}")'>
+                <div class="bg-light p-4 movie-content">
+            {% elif theme == "high-contrast" %}
+                <div class="bg-primary text-warning movie-backdrop"
+                     style='background-image: url("{{ movie.backdrop_url }}")'>
+                <div class="bg-primary p-4 movie-content">
+            {% endif %}
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h4 class="modal-title"
+                        id="movie-modal-{{ movie.id }}-label">{{ movie.title }}</h4>
+                    <p class="text-default"><em>
+                        Released {{ movie.release_date|format_datetime("%d %b %Y") }}<br>{{ movie.runtime }}
+                        minutes</em></p>
+                </div>
+                <div class="text-end">
+                    <div class="d-flex align-items-center justify-items-center">
+                        {% if movie.certification %}
+                            <img class="me-2"
+                                 width="40px" alt="{{ movie.certification }}"
+                                 height="auto" src="
+
+
+                                    {% if movie.certification == "12" %}{{ url_for('static', filename='images/BBFC_12_2019.svg') }}
+
+
+                                        {% elif movie.certification == '12A' %}{{ url_for('static', filename='images/BBFC_12A_2019.svg') }}
+
+
+                                        {% elif movie.certification == '15' %}{{ url_for('static', filename='images/BBFC_15_2019.svg') }}
+
+
+                                        {% elif movie.certification == '18' %}{{ url_for('static', filename='images/BBFC_18_2019.svg') }}
+
+
+                                        {% elif movie.certification == 'PG' %}{{ url_for('static', filename='images/BBFC_PG_2019.svg') }}
+
+
+                                        {% elif movie.certification == 'R18' %}{{ url_for('static', filename='images/BBFC_R18_2019.svg') }}
+                                        {% elif movie.certification == 'U' %}{{ url_for('static', filename='images/BBFC_U_2019.svg') }}{% endif %}
+                                        ">
+                        {% endif %}
+                        {% if theme == "light" %}
+                            <span class="badge bg-danger text-light fs-6">{{ movie.vote_average * 10 }}%</span></div>
+                        {% elif theme == "dark" %}
+                            <span class="badge bg-warning text-black fs-6">{{ movie.vote_average * 10 }}%</span></div>
+                        {% elif theme == "high-contrast" %}
+                            <span class="badge bg-warning text-primary fs-6">{{ movie.vote_average * 10 }}%</span></div>
+                        {% endif %}
+            </div>
+            </div>
+            <p>{{ movie.overview }}</p>
+            <hr class="solid">
+            <h6>Cast</h6>
+            <div class="row">
+                {% for cast in movie_casts[movie.id] %}
+                    <div class="col-md-2 col-4 avatar d-flex align-items-center justify-content-center flex-column">
+                        {% if cast.profile_url %}
+                            <img width="auto" height="50px" src="{{ cast.profile_url }}"
+                                 alt="{{ cast.name }}">
+                        {% else %}
+                            <img width="auto" height="50px"
+                                 src="{{ url_for('static', filename='images/blank-profile-picture.png') }}"
+                                 alt="{{ cast.name }}">
+                        {% endif %}
+                        <p class="text-center">{{ cast.name }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+            <hr class="solid">
+            <h6>Tags</h6>
+            <div class="d-flex align-items-start justify-content-start flex-row flex-wrap">
+                {% for keyword in movie.keywords %}
+                    {% if theme == "high-contrast" %}
+                        <h6 class="keyword m-2"><span class="badge bg-warning text-primary">{{ keyword.name }}</span>
+                        </h6>
+                    {% else %}
+                        <h6 class="keyword m-2"><span class="badge bg-secondary">{{ keyword.name }}</span></h6>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            </div>
+            {% if theme == "high-contrast" %}
+                <a class="btn btn-warning text-primary rounded-0 w-100"
+                   href="{{ url_for('movie_page', movie_id=movie.id) }}">Showings</a>
+            {% elif theme == "dark" %}
+                <a class="btn btn-warning text-black rounded-0 w-100"
+                   href="{{ url_for('movie_page', movie_id=movie.id) }}">Showings</a>
+            {% else %}
+                <a class="btn btn-danger text-white rounded-0  w-100"
+                   href="{{ url_for('movie_page', movie_id=movie.id) }}">Showings</a>
+            {% endif %}
+            </div>
+            </div>
+            </div>
+
+        </div>
+    {% endfor %}
+
+{% endblock %}
+{% block scripts %}
+    <script type="text/javascript">
+        var observer = new IntersectionObserver(function (entries) {
+            if (entries[0]['isIntersecting'] === true) {
+                if (entries[0]['intersectionRatio'] === 1)
+                    $('#expanding-divider').css({'width': '100%', 'opacity': '1', 'left': '0%'});
+            }
+        }, {threshold: [0, 0.5, 1]});
+        observer.observe(document.querySelector("#dadpad-title"));
+
+        function search() {
+            const compare = $(this).val().toLowerCase();
+            $.ajax({
+                url: "{{ url_for('api_movies_by_showing_date') }}",
+                dataType: 'json',
+                method: "GET",
+                data: {
+                    input: compare
+                },
+                success: function (data) {
+                    if (compare.length > 0) {
+                        $(".movie-col").each(function () {
+                            let id = $(this).attr("id").split("-")[2];
+                            if (data.ids.includes(parseInt(id))) {
+                                $("#movie-col-" + id).css("display", "block")
+                            } else {
+                                $("#movie-col-" + id).css("display", "none")
+                            }
+                        })
+                    } else {
+                        $(".movie-col").css("display", "block");
+                    }
+                }
+            })
+        }
+
+        $(function () {
+            $("#movie-search").on("keyup", search);
+        });
+    </script>
+
+{% endblock %}

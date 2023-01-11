@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Your bookings{% endblock %}
+{% set vars = {"ticket" : "light", "text" : "dark" } %}
+{% if theme == "dark" %}
+    {% if vars.update({"ticket": "light", "text": "dark"}) %}{% endif %}
+{% elif theme == "light" %}
+    {% if vars.update({"ticket": "dark", "text" : "light"}) %}{% endif %}
+{% elif theme == "high-contrast" %}
+    {% if vars.update({"ticket": "warning", "text" : "primary"}) %}{% endif %}
+{% endif %}
+{% block content %}
+    <h1>Your bookings</h1>
+    {% if reservations %}
+        <div class="row">
+            {% for reservation in reservations %}
+                <div class="col-md-6 my-2">
+                    {% if theme == "dark" %}
+                    <div class="card bg-dark">
+                    {% elif theme == "light" %}
+                    <div class="card bg-light">
+                    {% elif theme == "high-contrast" %}
+                    <div class="card bg-primary">
+                    {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ reservation.showing.movie.title }}, {{ reservation.showing.time.strftime("%H:%M") }}</h5>
+                            <h6 class="card-subtitle">{{ reservation.showing.time.strftime("%d-%b-%Y") }}</h6>
+                            <p class="card-text" style="margin-bottom: 0px">{{ reservation.tickets|length }} ticket{% if reservation.tickets|length != 1 %}s{% endif %}</p>
+                            <h6>
+                                {% for ticket in reservation.tickets %}
+                                    <span class="badge bg-{{ vars["ticket"] }} text-{{ vars["text"] }}">{{ ticket.seat.row }}{{ ticket.seat.column }}</span>
+                                {% endfor %}
+                            </h6>
+                            {% if reservation.transaction.payment_status == PaymentStatus.paid_cash %}
+                                <h6 class="card-text fw-bold text-{% if theme != "high-contrast" %}success{% else %}warning{% endif %}">Payment in Cash at Door</h6>
+                            {% elif reservation.transaction.payment_status == PaymentStatus.paid_card %}
+                                <h6 class="card-text fw-bold text-{% if theme != "high-contrast" %}success{% else %}warning{% endif %}">Paid with card</h6>
+                            {% elif reservation.transaction.payment_status == PaymentStatus.pending %}
+                                <h6 class="card-text fw-bold text-{% if theme != "high-contrast" %}info{% else %}warning{% endif %} ">Card payment pending</h6>
+                            {% elif reservation.transaction.payment_status == PaymentStatus.declined %}
+                                <h6 class="card-text fw-bold text-{% if theme != "high-contrast" %}danger{% else %}warning{% endif %}">Card payment declined</h6>
+                            {% endif %}
+                            {% if theme == "dark" %}
+                            <a class="btn btn-warning" href="{{ url_for("download_ticket_page", reservation_id=reservation.id) }}" target="_blank" rel="noopener noreferrer" download="{{ reservation.showing.movie.title }} Tickets.pdf">Print out tickets</a>
+                            {% elif theme == "high-contrast" %}
+                            <a class="btn btn-warning text-primary" href="{{ url_for("download_ticket_page", reservation_id=reservation.id) }}" target="_blank" rel="noopener noreferrer" download="{{ reservation.showing.movie.title }} Tickets.pdf">Print out tickets</a>
+                            {% else %}
+                            <a class="btn btn-warning text-black" href="{{ url_for("download_ticket_page", reservation_id=reservation.id) }}" target="_blank" rel="noopener noreferrer" download="{{ reservation.showing.movie.title }} Tickets.pdf">Print out tickets</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    </div>
+                {% endfor %}
+            </div>
+    {% else %}
+        <h2 style="text-align:center; padding:150px">NO BOOKINGS</h2>
+    {% endif %}
+{% endblock %}

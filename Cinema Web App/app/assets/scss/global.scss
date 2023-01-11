@@ -1,0 +1,33 @@
+body {
+    /*background-color: var(--bs-dark);*/
+    min-height: 100vh;
+    height: 100%;
+    font-family: 'Josefin Sans', sans-serif !important;
+}
+
+.cc-message, .cc-compliance {
+    font-family: 'Josefin Sans', sans-serif !important;
+}
+
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+    font-weight: 900 !important;
+}
+
+.nav-link {
+    cursor: pointer;
+}
+
+.tab-dark .active {
+    color: var(--bs-dark) !important;
+    background-color: var(--bs-light) !important;
+}
+
+.tab-light .active {
+    color: var(--bs-dark) !important;
+    background-color: var(--bs-white) !important;
+}
+
+.tab-primary .active {
+    color: var(--bs-primary) !important;
+    background-color: var(--bs-warning) !important;
+}

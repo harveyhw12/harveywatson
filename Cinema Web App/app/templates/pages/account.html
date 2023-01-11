@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+{% block title %}Your account{% endblock %}
+{% set vars = {"divider" : "dark", "button" : "warning"} %}
+{% if theme == "dark" %}
+    {% if vars.update({"divider": "light", "button" : "warning"}) %}{% endif %}
+{% elif theme == "light" %}
+    {% if vars.update({"divider": "dark" , "button" : "danger"}) %}{% endif %}
+{% elif theme == "high-contrast" %}
+    {% if vars.update({"divider": "warning", "button" : "warning"}) %}{% endif %}
+{% endif %}
+{% block content %}
+    <h1 id="welcome-user" class="text-center">Welcome back, {{ current_user.first_name }}.</h1>
+    <h2 style="margin-bottom: 20px; border-bottom: 5px solid" class="border-bottom-{{ vars["divider"] }}">Account Information</h2>
+    <div class="row">
+        <div class="col-3 col-md-2" style="overflow: hidden">
+            <h5 id="first_name_label" style="float: left;"> First name:</h5>
+        </div>
+        <div id="first_name_col" class="col" style="overflow: hidden">
+            <h5 id="first_name" style="float: left;"> {{ current_user.first_name }} </h5>
+        </div>
+        <div class="col edit-fname" style="display: none">
+            <form id="new-fname" class="row align-items-center" style="margin-bottom: 0px">
+                <div class="col-auto">
+                    <input class="form-control form-control-sm" placeholder="{{ current_user.first_name }}" id="firstname-input"
+                           type="text">
+                </div>
+                <div class="col-auto">
+                    <input type="submit" class="btn btn-{{ vars["button"] }} btn-sm">
+                </div>
+            </form>
+        </div>
+        <div class="col-auto">
+            <button id="change-fname" class="btn btn-outline-{{ vars["button"] }} btn-sm float-end">edit</button>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col-3 col-md-2" style="overflow: hidden">
+            <h5 id="last_name_label" style="float: left;"> Last name:</h5>
+        </div>
+        <div id="last_name_col" class="col" style="overflow: hidden">
+            <h5 id="last_name" style="float: left;">{{ current_user.last_name }}</h5>
+        </div>
+        <div class="col edit-sname" style="display: none">
+            <form id="new-sname" class="row align-items-center">
+                <div class="col-auto">
+                    <input class="form-control form-control-sm" placeholder="{{ current_user.last_name }}" id="surname-input"
+                           type="text">
+                </div>
+                <div class="col-auto">
+                    <input type="submit" class="btn btn-{{ vars["button"] }} btn-sm">
+                </div>
+            </form>
+        </div>
+        <div class="col-auto">
+            <div style="overflow: hidden;">
+                <button id="change-sname" class="btn btn-outline-{{ vars["button"] }} btn-sm float-end">edit</button>
+            </div>
+        </div>
+
+
+    </div>
+    <div class="row">
+        <div class="col-3 col-md-2">
+            <h5 id="email-label" style="float: left;">Email:</h5>
+        </div>
+        <div class="col" id="email-col" style="overflow: hidden">
+            <h5 id="email" style="float: left;">{{ current_user.email }}</h5>
+        </div>
+        <div class="col edit-email" style="display: none;">
+            <form id="new-email" class="row align-items-center">
+                <div class="col-auto">
+                    <input class="form-control form-control-sm" placeholder="Enter new email" id="initial-email"
+                           type="email">
+                </div>
+                <div class="col-auto">
+                    <input class="form-control form-control-sm" placeholder="Confirm new email" id="confirm-email"
+                           type="email">
+                </div>
+                <div class="col-auto">
+                    <input type="submit" class="btn btn-{{ vars["button"] }} btn-sm">
+                </div>
+            </form>
+            <p id="email-error" style="color: red; display: none">Emails entered did not match</p>
+        </div>
+        <div class="col-auto">
+            <div style="overflow: hidden;">
+                <button id="change-email" class="btn btn-outline-{{ vars["button"] }} btn-sm float-end">edit</button>
+            </div>
+        </div>
+
+
+    </div>
+
+    <div class="row">
+        <div class="col-3 col-md-2" style="overflow: hidden">
+            <h5 style="float: left">Password: </h5>
+        </div>
+        <div class="col" style="overflow: hidden">
+            <h5 style="float: left">∗∗∗∗∗∗∗</h5>
+        </div>
+        <div class="col">
+            <div class="edit-password" style="display: none;">
+                <a href="{{ url_for_security('change_password') }}" class="btn btn-{{ vars["button"] }}">Change Password</a>
+            </div>
+        </div>
+        <div class="col-auto">
+            <button id="change-password" class="btn btn-outline-{{ vars["button"] }} btn-sm float-end">edit</button>
+        </div>
+    </div>
+
+    <h2 style="margin-bottom: 20px; margin-top: 20px; border-bottom: 5px solid" class="border-bottom-{{ vars["divider"] }}">Account Settings</h2>
+    <a href="{{ url_for_security("logout") }}" class="btn btn-{{ vars["button"] }}">Logout</a>
+
+
+    {% if current_user.has_role("staff") or current_user.has_role("manager") %}
+        <h2 style="margin-bottom: 20px; margin-top: 20px; border-bottom: 5px solid" class="border-bottom-{{ vars["divider"] }}">Staff Options</h2>
+        <div class="row">
+            <style>
+                .staff-options{
+                    margin-top: 10px;
+                    margin-right: 10px;
+                    margin-bottom: 10px;
+                }
+            </style>
+            <div class="col-md-auto">
+                <a href="{{ url_for('staff_graphs_page') }}" class="btn btn-{{ vars["button"] }} staff-options">Cinema analysis</a>
+            </div>
+            <div class="col-md-auto">
+                <a href="{{ url_for('schedule_showings') }}" class="btn btn-{{ vars["button"] }} staff-options">Automatically Schedule showings</a>
+            </div>
+            <div class="col-md-auto">
+                <a href="{{ url_for('new_movie') }}" , class="btn btn-{{ vars["button"] }} staff-options">Add a new movie</a>
+            </div>
+            <div class="col-md-auto">
+                <a href="{{ url_for('remove_movie') }}" , class="btn btn-{{ vars["button"] }} staff-options">Remove a movie</a>
+            </div>
+            <div class="col-md-auto">
+                <a href="{{ url_for('edit_showings') }}" , class="btn btn-{{ vars["button"] }} staff-options">Change cinema showings</a>
+            </div>
+        </div>
+
+        {% if current_user.has_role("manager") %}
+            <h2 style="margin-bottom: 20px; margin-top: 20px; border-bottom: 5px solid" class="border-bottom-{{ vars["divider"] }}">Manager Options</h2>
+            <a href="{{ url_for('search_name') }}" , class="btn btn-{{ vars["button"] }}">Change user permissions</a>
+        {% endif %}
+    {% endif %}
+
+
+{% endblock %}
+{% block scripts %}
+    <script type="text/javascript">
+        $("#change-fname").on("click", function () {
+            if ($(".edit-fname").css("display") === "none") {
+                $(".edit-fname").css("display", "inline");
+                $("#first_name_col").css("display", "none");
+            } else {
+                $(".edit-fname").css("display", "none")
+                $("#first_name_col").css("display", "block");
+            }
+        });
+        $("#change-sname").on("click", function () {
+            if ($(".edit-sname").css("display") === "none") {
+                $(".edit-sname").css("display", "block")
+                $("#last_name_col").css("display", "none");
+
+            } else {
+                $(".edit-sname").css("display", "none")
+                $("#last_name_col").css("display", "block");
+
+            }
+        });
+        $("#change-email").on("click", function () {
+            if ($(".edit-email").css("display") === "none") {
+                $(".edit-email").css("display", "block")
+                $("#email-col").css("display", "none")
+            } else {
+                $(".edit-email").css("display", "none")
+                $("#email-col").css("display", "block")
+            }
+        });
+        $("#change-password").on("click", function () {
+            if ($(".edit-password").css("display") === "none") {
+                $(".edit-password").css("display", "inline")
+            } else {
+                $(".edit-password").css("display", "none")
+            }
+        });
+        $("#new-fname").submit(function (e) {
+            e.preventDefault()
+            const firstname = $(this).find("input").val()
+            if (firstname.length > 0) {
+                $.ajax({
+                    url: "{{ url_for('change_first_name') }}",
+                    dataType: 'json',
+                    method: "GET",
+                    data: {
+                        firstname: firstname
+                    },
+                    success: function (data) {
+                        $("#welcome-user").html("Welcome back, " + data.firstname)
+                        $("#first_name").html(data.firstname);
+                        $("#firstname-input").val("");
+                        $("#firstname-input").attr("placeholder", data.firstname);
+                        $(".edit-fname").css("display", "none");
+                        $("#first_name_col").css("display", "block");
+
+                    }
+                })
+            }
+        })
+        $("#new-sname").submit(function (e) {
+            e.preventDefault()
+            const surname = $(this).find("input").val()
+            if (surname.length > 0) {
+                $.ajax({
+                    url: "{{ url_for('change_last_name') }}",
+                    dataType: 'json',
+                    method: "GET",
+                    data: {
+                        surname: surname
+                    },
+                    success: function (data) {
+                        $("#last_name").html(data.lastname)
+                        $("#surname-input").val("")
+                        $("#surname-input").attr("placeholder", data.lastname);
+                        $(".edit-sname").css("display", "none");
+                        $("#last_name_col").css("display", "block");
+
+                    }
+                })
+            }
+        })
+        $("#new-email").submit(function (e) {
+            e.preventDefault()
+            const address = $("#initial-email").val()
+            const confirm = $("#confirm-email").val()
+            if (address === confirm) {
+                $("#email-error").css("display", "none")
+                if (address.length > 0) {
+                    $.ajax({
+                        url: "{{ url_for('change_email') }}",
+                        dataType: 'json',
+                        method: "GET",
+                        data: {
+                            email: address
+                        },
+                        success: function (data) {
+                            if (data.email === "ERROR") {
+                                console.log("already in use")
+                                $("#email-error").css("display", "block")
+                                $("#email-error").html("This email is already in use.")
+                            } else {
+                                $("#email").html(data.email)
+                                $("#initial-email").val("")
+                                $("#confirm-email").val("")
+                                $(".edit-email").css("display", "none");
+                                $("#email-col").css("display", "block");
+                            }
+
+                        }
+                    })
+                } else {
+                    $("#email-error").css("display", "block")
+                    $("#email-error").html("Please enter an email")
+                }
+            } else {
+                $("#email-error").css("display", "block")
+                $("#email-error").html("Emails entered did not match")
+
+            }
+        })
+
+    </script>
+
+{% endblock %}

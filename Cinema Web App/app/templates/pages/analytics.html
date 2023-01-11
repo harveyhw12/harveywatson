@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Data Analytics{% endblock %}
+{% block content %}
+{% if current_user.has_role == staff or current_user.has_role == manager %}
+    <h1>Welcome back {{ current_user.name }}</h1>
+{% else %}
+    <h1>Cannot view this content</h1>
+{% endif %}
+{% endblock %}

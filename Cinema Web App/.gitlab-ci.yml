@@ -1,0 +1,23 @@
+image: "python:3.8"
+stages:
+#  - test
+  - deploy
+
+#test:
+#  stage: test
+#  script:
+#    - apt-get update -qy
+#    - apt-get install -y python-dev python-pip
+#    - pip install -e .
+#    - cd tests
+#    - python test_app.py
+#
+production:
+  stage: deploy
+  script:
+    - apt-get update -qy
+    - apt-get install -y ruby-dev
+    - gem install dpl
+    - dpl --provider=heroku --app=cinema-dadpad --api-key=$HEROKU_API_KEY
+  only:
+    - master

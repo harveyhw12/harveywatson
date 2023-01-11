@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+{% block title %}{{ showing.time|format_datetime("%d %b %Y %H:%M") }}{% endblock %}
+{% set vars = {"bg" : "dark", "text" : "white" } %}
+{% if theme == "dark" %}
+    {% if vars.update({"bg": "dark", "text": "white"}) %}{% endif %}
+{% elif theme == "light" %}
+    {% if vars.update({"bg": "light", "text" : "black"}) %}{% endif %}
+{% elif theme == "high-contrast" %}
+    {% if vars.update({"bg": "primary", "text" : "warning"}) %}{% endif %}
+{% endif %}
+{% block content %}
+    <h1 style="text-transform: uppercase">{{ showing.movie.title }}</h1>
+    <h2>{{ showing.time|format_datetime("%d %b %Y %H:%M") }}</h2>
+    <h2> Screen {{ showing.screen_id }}{% if showing.showing_type.value == 2 %}, Audio Described
+        {% elif showing.showing_type.value == 3 %}, Subtitled
+        {% endif %}
+    </h2>
+
+    <div class="row">
+        <div class="col-md-3 col-xs-6">
+            <div class="card text-{{ vars["text"] }} bg-{{ vars["bg"] }}">
+                <div class="card-body">
+                    <h5 class="card-title">Regular</h5>
+                    <p class="card-text"><i>A standard ticket.</i></p>
+                    <div class="input-group ticket-counter" id="regular-tickets">
+                        <button class="btn btn-outline-primary remove-ticket text-{{ vars["text"] }}">-</button>
+                        <input disabled min="0" type="number" class="form-control"/>
+                        <button class="btn btn-outline-primary add-ticket text-{{ vars["text"] }}">+</button>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-evenly flex-wrap">
+                    {% if theme == "dark" %}
+                        <span class="text-light">{{ prices["regular"]["regular"]|format_money }}</span>
+                    {% elif theme == "light" %}
+                        <span class="text-muted">{{ prices["regular"]["regular"]|format_money }}</span>
+                    {% elif theme == "high-contrast" %}
+                        <span class="text-light">{{ prices["regular"]["regular"]|format_money }}</span>
+                    {% endif %}
+                    <span class="text-warning">{{ prices["regular"]["vip"]|format_money }}</span>
+                    <span class="text-danger">{{ prices["regular"]["low_visibility"]|format_money }}</span>
+                    <span class="text-info">{{ prices["regular"]["disabled"]|format_money }}</span>
+                </div>
+            </div>
+        </div>
+        {% if showing.movie.certification not in ["15", "18"] %}
+        <div class="col-md-3 col-xs-6">
+            <div class="card text-{{ vars["text"] }} bg-{{ vars["bg"] }}">
+                <div class="card-body">
+                    <h5 class="card-title">Child</h5>
+                    <p class="card-text"><i>Children 14 and under.</i></p>
+                    <div class="input-group ticket-counter" id="child-tickets">
+                        <button class="btn btn-outline-primary remove-ticket text-{{ vars["text"] }}">-</button>
+                        <input disabled min="0" type="number" class="form-control"/>
+                        <button class="btn btn-outline-primary add-ticket text-{{ vars["text"] }}">+</button>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-evenly flex-wrap">
+                    {% if theme == "dark" %}
+                        <span class="text-light">{{ prices["child"]["regular"]|format_money }}</span>
+                    {% elif theme == "light" %}
+                        <span class="text-muted">{{ prices["child"]["regular"]|format_money }}</span>
+                    {% elif theme == "high-contrast" %}
+                        <span class="text-light">{{ prices["child"]["regular"]|format_money }}</span>
+                    {% endif %}                    <span
+                        class="text-warning">{{ prices["child"]["vip"]|format_money }}</span>
+                    <span class="text-danger">{{ prices["child"]["low_visibility"]|format_money }}</span>
+                    <span class="text-info">{{ prices["child"]["disabled"]|format_money }}</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        <div class="col-md-3 col-xs-6">
+            <div class="card text-{{ vars["text"] }} bg-{{ vars["bg"] }}">
+                <div class="card-body">
+                    <h5 class="card-title">Student</h5>
+                    <p class="card-text"><i>Student ID required.</i></p>
+                    <div class="input-group ticket-counter" id="student-tickets">
+                        <button class="btn btn-outline-primary remove-ticket text-{{ vars["text"] }}">-</button>
+                        <input disabled min="0" type="number" class="form-control"/>
+                        <button class="btn btn-outline-primary add-ticket text-{{ vars["text"] }}">+</button>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-evenly flex-wrap">
+                    {% if theme == "dark" %}
+                        <span class="text-light">{{ prices["student"]["regular"]|format_money }}</span>
+                    {% elif theme == "light" %}
+                        <span class="text-muted">{{ prices["student"]["regular"]|format_money }}</span>
+                    {% elif theme == "high-contrast" %}
+                        <span class="text-light">{{ prices["student"]["regular"]|format_money }}</span>
+                    {% endif %}                    <span
+                        class="text-warning">{{ prices["student"]["vip"]|format_money }}</span>
+                    <span class="text-danger">{{ prices["student"]["low_visibility"]|format_money }}</span>
+                    <span class="text-info">{{ prices["student"]["disabled"]|format_money }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-xs-6">
+            <div class="card text-{{ vars["text"] }} bg-{{ vars["bg"] }}">
+                <div class="card-body">
+                    <h5 class="card-title">Senior</h5>
+                    <p class="card-text"><i>Dadpad ID required.</i></p>
+                    <div class="input-group ticket-counter" id="senior-tickets">
+                        <button class="btn btn-outline-primary remove-ticket text-{{ vars["text"] }}" type="button">-
+                        </button>
+                        <input disabled min="0" type="number" class="form-control"/>
+                        <button class="btn btn-outline-primary add-ticket text-{{ vars["text"] }}" type="button">+
+                        </button>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-evenly flex-wrap">
+                    {% if theme == "dark" %}
+                        <span class="text-light">{{ prices["senior"]["regular"]|format_money }}</span>
+                    {% elif theme == "light" %}
+                        <span class="text-muted">{{ prices["senior"]["regular"]|format_money }}</span>
+                    {% elif theme == "high-contrast" %}
+                        <span class="text-light">{{ prices["senior"]["regular"]|format_money }}</span>
+                    {% endif %}                    <span
+                        class="text-warning">{{ prices["senior"]["vip"]|format_money }}</span>
+                    <span class="text-danger">{{ prices["senior"]["low_visibility"]|format_money }}</span>
+                    <span class="text-info">{{ prices["senior"]["disabled"]|format_money }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="d-flex align-items-center justify-content-center">
+        <div id="seat-key" class="row my-4">
+            <div class="col-sm-3 d-flex align-items-center justify-content-start flex-column">
+                {% if theme == "dark" %}
+                    <i class="fas fa-couch fa-lg text-light"></i>
+                {% elif theme == "light" %}
+                    <i class="fas fa-couch fa-lg text-muted"></i>
+                {% elif theme == "high-contrast" %}
+                    <i class="fas fa-couch fa-lg text-light"></i>
+                {% endif %}
+                <small class="text-center">Regular</small>
+            </div>
+            <div class="col-sm-3 d-flex align-items-center justify-content-start flex-column">
+                <i class="fas fa-couch fa-lg text-warning"></i>
+                <small class="text-center">VIP</small>
+            </div>
+            <div class="col-sm-3 d-flex align-items-center justify-content-start flex-column">
+                <i class="fas fa-couch fa-lg text-danger"></i>
+                <small class="text-center">Low Visibility</small>
+            </div>
+            <div class="col-sm-3 d-flex align-items-center justify-content-start flex-column">
+                <i class="fas fa-couch fa-lg text-info"></i>
+                <small class="text-center">Wheelchair Access</small>
+            </div>
+        </div>
+    </div>
+    <div id="seat-wrapper" class="invisible d-flex flex-column align-items-center justify-content-center overflow-auto my-5">
+        <p id="seat-indicator">
+            You have <strong>0 seats</strong> to allocate
+        </p>
+        <div id="seat-allocation" class="d-grid align-self-start align-self-md-auto">
+                    <hr style="width:100%; height : 5px; color : var(--bs-{{ vars["text"] }})">
+        </div>
+        <h3><b>Screen</b></h3>
+        <form method="post" id="seat-add-to-basket" action="{{ url_for("showing_page", showing_id=showing.id) }}">
+            {{ form.hidden_tag() }}
+            {% if theme != "high-contrast" %}
+            <input type="submit" value="Add to basket" class="btn btn-primary mt-4"/>
+            {% else %}
+            <input type="submit" value="Add to basket" class="btn btn-warning text-primary mt-4"/>
+            {% endif %}
+        </form>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script type="text/javascript">
+        let totals = [0, 0, 0, 0];
+
+        function updateShowingId() {
+            $("#seat-add-to-basket input[name='showing_id']").val({{ showing.id|tojson }});
+        }
+
+        function updateSeatIds() {
+            let seats = [];
+            $(".seat-selected").each(function () {
+                seats.push($(this).attr("id").split("-")[1])
+            });
+
+            $("#seat-add-to-basket input[name='seat_ids']").val(seats.join(','));
+        }
+
+        function updateTickets() {
+            $("#seat-add-to-basket input[name='tickets']").val(totals.join(','));
+        }
+
+        function updateIndicator() {
+            let total = totals.reduce(function (acc, item) {
+                return acc + item;
+            }, 0);
+            let remaining = total - $(".seat-selected").length
+            $("#seat-indicator strong").text(remaining + " seat" + (remaining === 1 ? "" : "s"));
+            $("#seat-add-to-basket input[type='submit']").prop("disabled", remaining > 0 || total >= {{ showing.screen.width * showing.screen.height }} - $(".seat-unavailable").length);
+            updateSeatIds();
+            updateShowingId();
+            updateTickets();
+        }
+
+        function seatTypeToClass(type) {
+            switch (type) {
+                case "low_visibility":
+                    return "text-danger";
+                case "disabled":
+                    return "text-info";
+                case "vip":
+                    return "text-warning";
+                case "regular":
+                default:
+                {% if theme != "light" %}
+                    return "text-light";
+                {% else %}
+                    return "text-muted";
+                {% endif %}
+            }
+        }
+
+        function displaySeats(grid, inputId) {
+            let total = totals.reduce(function (acc, item) {
+                return acc + item;
+            }, 0);
+            let takenTotal = 0;
+            let rows = Object.entries(grid).reverse();
+            rows.forEach(function ([rowName, row], rowIndex) {
+                let columns = Object.entries(row);
+
+                if(rowIndex === 0){
+                    $("#seat-allocation hr").css("grid-row", rows.length + 2);
+                    $("#seat-allocation hr").css("grid-column", "1 / span " + columns.length + 1);
+                }
+
+                let rowIndicator = $("#row-" + rowIndex);
+                if (!rowIndicator.length) {
+                    rowIndicator = $("<span class='text-center me-2 mt-1'></span>");
+                }
+                rowIndicator.text(rowName);
+                rowIndicator.attr("id", "row-" + rowIndex);
+                rowIndicator.css("grid-row", (rowIndex + 2) + " / span 1");
+                rowIndicator.css("grid-column", "1 / span 1");
+
+                if (!$("#seat-allocation #row-" + rowIndex).length) {
+                    $("#seat-allocation").append(rowIndicator);
+                }
+
+                columns.forEach(function ([columnName, seat], columnIndex) {
+                    if (rowIndex === 0) {
+                        let columnIndicator = $("#column-" + columnIndex);
+                        if (!columnIndicator.length) {
+                            columnIndicator = $("<span class='text-center'></span>");
+                        }
+                        columnIndicator.text(columnName);
+                        columnIndicator.attr("id", "column-" + columnIndex);
+                        columnIndicator.css("grid-column", (columnIndex + 2) + " / span 1");
+                        columnIndicator.css("grid-row", "1 / span 1");
+                        if (!$("#seat-allocation #column-" + columnIndex).length) {
+                            $("#seat-allocation").append(columnIndicator);
+                        }
+                    }
+                    let icon = $("#seat-" + seat.id);
+                    if (!icon.length) {
+                        icon = $("<i></i>");
+                        icon.attr("id", "seat-" + seat.id);
+                        icon.addClass("fas fa-couch fa-2x");
+                    } else {
+                        icon.removeClass(seatTypeToClass(seat.type));
+                        icon.off();
+                    }
+                    if (!icon.hasClass("seat-selected")) {
+                        icon.addClass(seatTypeToClass(seat.type));
+                    }
+                    if (seat.taken) {
+                        takenTotal++;
+                        icon.css("opacity", "0.4");
+                        icon.addClass("seat-unavailable");
+                    } else {
+                        icon.mouseover(function () {
+                            $(this).css("opacity", "0.7");
+                        });
+                        icon.mouseout(function () {
+                            $(this).css("opacity", "1");
+                        });
+                        icon.click(function () {
+                            if ($(this).hasClass("seat-selected") || $(".seat-selected").length < total) {
+                                $(this).toggleClass(seatTypeToClass(seat.type));
+                                $(this).toggleClass("text-success");
+                                $(this).toggleClass("seat-selected");
+                                updateIndicator();
+                            }
+
+                        });
+                    }
+                    icon.css("cursor", seat.taken ? "not-allowed" : "pointer");
+                    icon.css("grid-row", (rowIndex + 2) + " / span 1");
+                    icon.css("grid-column", (columnIndex + 2) + " / span 1");
+
+
+                    if (!$("#seat-allocation #seat-" + seat.id).length) {
+                        $("#seat-allocation").append(icon);
+                    }
+                });
+            });
+            $(".add-ticket").prop("disabled", total >= {{ showing.screen.width * showing.screen.height }} - takenTotal);
+
+            if(total > {{ showing.screen.width * showing.screen.height }} - takenTotal){
+                let newValue = $(inputId).val() - (total - {{ showing.screen.width * showing.screen.height }} - takenTotal);
+                $(inputId).val(newValue);
+                let index = $(inputId).index(".ticket-counter input");
+                totals[index] = newValue;
+
+                alert("Not enough available seats in the screen");
+
+            }
+            updateIndicator();
+            $("#seat-wrapper").removeClass("invisible");
+        }
+
+
+        function getSeats(inputId) {
+            $.ajax({
+                url: "{{ url_for("get_seats_for_showing", showing_id=showing.id) }}",
+                dataType: "json",
+                success: function (result, status, xhr) {
+                    displaySeats(result, inputId);
+                },
+                error: function (xhr, status, error) {
+                    alert(error);
+                }
+            })
+        }
+
+        $(function () {
+            $(".ticket-counter .remove-ticket").on("click", function () {
+                let val = +$(this).siblings("input").val();
+                $(this).siblings("input").val(val === 0 ? 0 : val - 1);
+                $(this).siblings("input").change();
+            });
+
+            $(".ticket-counter .add-ticket").on("click", function () {
+                let val = +$(this).siblings("input").val();
+                $(this).siblings("input").val(val + 1);
+                $(this).siblings("input").change();
+            });
+            $(".ticket-counter input").val(0);
+            $(".ticket-counter input").change(function () {
+                let index = $(this).index(".ticket-counter input");
+                let inputId = "#" + $(this).closest("div").attr("id") + " input";
+                let val = +$(this).val();
+                $(this).siblings(".remove-ticket").prop("disabled", val === 0);
+                if(totals[index] > val){
+                    $(".seat-selected").removeClass("seat-selected text-success");
+                }
+                totals[index] = val;
+                const total = totals.reduce(function (acc, item) {
+                    return acc + item;
+                }, 0);
+
+
+                if (total > 0) {
+                    getSeats(inputId);
+                } else {
+                    $("#seat-wrapper").addClass("invisible");
+                }
+            });
+
+
+        });
+    </script>
+{% endblock %}

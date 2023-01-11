@@ -1,0 +1,6 @@
+from .security.register_form import ExtendedRegisterForm
+from .add_to_basket_form import AddToBasketForm
+from .remove_from_basket_form import RemoveFromBasketForm
+from .checkout_form import CheckoutForm
+from .new_movie_form import NewMovieForm
+from .change_account_permission_form import SearchNameForm

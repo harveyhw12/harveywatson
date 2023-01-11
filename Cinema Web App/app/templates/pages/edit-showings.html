@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Edit Showings{% endblock %}
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for("static", filename="styles/movies.css") }}">
+{% endblock %}
+{% block content %}
+<div class="row">
+
+            <div class="col">
+                <div class="card-body">
+                    <h3> Remove a showing </h3>
+                    <div class="form-group">
+                        <label for="manual-change-showing">Select Screen</label>
+                        <select class="screen-select form-control" id="manual-change-showing">
+                        </select>
+                        <label for="showing-date">Select Date</label>
+                        <input type="date" id="showing-date" value="2021-01-01">
+                    </div>
+                    <h4>Click the showing you want to remove</h4>
+                    <div id="showings-to-show">
+
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card-body">
+                    <div>
+                        <h3> Add a showing</h3>
+                        <form>
+                            <label for="manual-change-showing">Select Screen</label>
+                            <select class="screen-select form-control" id="screen-to-add-showing"></select>
+                            <label for="manual-showing-movie-select">Select Movie</label>
+                            <select class="movie-select form-control" id="movie-to-add-showing">
+                            </select>
+                            <label for="manual-showing-time" style="display:block">Select Time</label>
+                            <input type="datetime-local" id="showing-time">
+                            <label for="showing-type" style="display:block">Select Showing Type</label>
+                            <select id="showing-type">
+                                <option value="1">Regular</option>
+                                <option value="2">Audio Description</option>
+                                <option value="3">Subtitles</option>
+                            </select>
+                        </form>
+                        <button class="btn btn-danger" id="create-showing">Timetable Showing</button>
+                        <p id="showing-error"></p>
+                    </div>
+
+                </div>
+            </div>
+
+
+{% endblock %}
+{% block scripts %}
+    <script type="text/javascript">
+    function change_showings(){
+        const screen_name = $(".screen-select").val();
+        const date = $("#showing-date").val();
+        $.ajax({
+            url: "{{ url_for('get_showings') }}",
+            dataType: 'json',
+            method: "GET",
+            data: {
+                screen_id : screen_name,
+                date : date
+            },
+            success: function (data) {
+                $("#showings-to-show").empty()
+                Object.entries(data["showings"]).forEach(function([showing_id, [showing_time, showing_title]]) {
+                    const showing_to_show = $("<br><br><a class='btn btn-primary'>"+showing_title+": "+showing_time+"</a>")
+                    showing_to_show.attr("href", "/edit-chosen-showings/"+showing_id)
+                    $("#showings-to-show").append(showing_to_show)
+                })
+            }
+        })
+    }
+
+        $(function () {
+            $("#manual-change-showing, #showing-date").on("change", change_showings);
+        });
+        $(function () {
+            $.ajax({
+                url: "{{ url_for("api_movies") }}",
+                dataType: "json",
+                success: function (movies) {
+                    movies.forEach(function (movie) {
+                        const option = $("<option>" + movie.title + "</option>");
+                        option.attr("value", movie.id);
+                        $(".movie-select").append(option);
+                    });
+                    if (movies.length > 0) {
+                        $(".movie-select").val(movies[0].id);
+                        $(".movie-select").trigger("change");
+                    }
+                }
+            });
+        })
+        $(function () {
+            $.ajax({
+                url: "{{ url_for("get_screens") }}",
+                dataType: "json",
+                success: function (screens) {
+                    screens.forEach(function (screen) {
+                        const option = $("<option>" + "Screen: "+screen.name + "</option>");
+                        option.attr("value", screen.id);
+                        $(".screen-select").append(option);
+                    });
+                    if (screens.length > 0) {
+                        $(".screen-select").val(screens[0].id);
+                        $(".screen-select").trigger("change");
+                    }
+                }
+            });
+        })
+        $(".new-showing").on("click", function () {
+            if ($(".showing-details").attr("style") == "display: none;") {
+                $(".showing-details").css("display", "block")
+            } else {
+                $(".showing-details").css("display", "none")
+            }
+        })
+    $("#create-showing").on("click", function() {
+        const screen = $("#screen-to-add-showing").val()
+        const movie = $("#movie-to-add-showing").val()
+        const time = $("#showing-time").val()
+        const showing_type = $("#showing-type").val()
+        $.ajax({
+            url: "{{url_for('create_showing')}}",
+            dataType: 'json',
+            data : {
+                screen_id : screen,
+                movie_id : movie,
+                time : time,
+                showing_type : showing_type
+            },
+            success: function(data) {
+                if (data["success"] == false) {
+                    $('#showing-error').css("color", "red")
+                    $('#showing-error').css("display", "block")
+                    $('#showing-error').html("This showing could not be created")
+                } else {
+                    $('#showing-error').css("color", "green")
+                    $('#showing-error').css("display", "block")
+                    $('#showing-error').html("This showing was successfully created")
+                }
+            }
+        })
+    })
+    </script>
+
+{% endblock %}

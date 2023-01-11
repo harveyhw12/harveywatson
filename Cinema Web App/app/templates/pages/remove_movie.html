@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Remove Movie{% endblock %}
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for("static", filename="styles/movies.css") }}">
+{% endblock %}
+{% block content %}
+    <h2>Click a movie poster to make it inactive</h2>
+    <div class="form-group">
+        <input id="movie-search" class="form-control"
+               placeholder="Enter a Movie Name, Keyword or Date (formatted dd/mm/yyyy)"/>
+    </div>
+
+    <div class="row">
+        {% for movie in movies %}
+            <div class="movie-col col-lg-3 col-sm-4" id="movie-col-{{ movie.id }}">
+                <div class="movie", value="{{ movie.id }}">
+                    <img src="{{ movie.poster_url }}" alt="{{ movie.title }}"/>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script type="text/javascript">
+        function search() {
+            const compare = $(this).val().toLowerCase();
+            $.ajax({
+                url: "{{ url_for('api_movies_by_showing_date') }}",
+                dataType: 'json',
+                method: "GET",
+                data: {
+                    input: compare
+                },
+                success: function (data) {
+                    if (compare.length > 0) {
+                        $(".movie-col").each(function () {
+                            let id = $(this).attr("id").split("-")[2];
+                            if (data.ids.includes(parseInt(id))) {
+                                $("#movie-col-" + id).css("display", "block")
+                            } else {
+                                $("#movie-col-" + id).css("display", "none")
+                            }
+                        })
+                    } else {
+                        $(".movie-col").css("display", "block");
+                    }
+                }
+            })
+        }
+
+        $(function () {
+            $("#movie-search").on("keyup", search);
+        });
+        $(".movie-col").on("click", function() {
+            const id = $(this).attr("id").split("-")[2]
+            console.log(id)
+            $.ajax({
+                url: "{{ url_for('delete_movie') }}",
+                dataType: 'json',
+                method: "GET",
+                data: {
+                    input: id
+                },
+                success: function (data) {
+                    console.log(data["success"])
+                    window.location.reload()
+                }
+            })
+        })
+    </script>
+
+{% endblock %}
